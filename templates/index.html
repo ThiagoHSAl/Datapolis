@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datapólis — Dados Sociais e Relevância Urbana</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+
+</head>
+<body>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% include 'components/navbar.html' %} 
+
+<section class="hero">
+  <span class="hero-tag">Dados Abertos · Inovação Cívica</span>
+  <h1>Transparência pública<br>ao alcance de <span class="highlight">todos</span></h1>
+  <p class="hero-sub">
+    Explore indicadores sociais e de gestão de todos os municípios brasileiros em um só lugar. Navegue pelo mapa ou busque por uma cidade.
+  </p>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <input class="search-input" id="mainSearch" type="text" placeholder="Buscar município (ex: Belo Horizonte)…" autocomplete="off" />
+      <div class="search-divider"></div>
+      <button class="search-btn" onclick="buscarMunicipio()">Buscar</button>
+    </div>
+    
+    <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+  </div>
+</section>
+
+<div class="map-section" style="position: relative;">
+        
+        <div id="map-splash" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 100; transition: opacity 2s ease-in-out; border-radius: 8px; overflow: hidden;">
+          <img src="{{ url_for('static', filename='Logo1.jpeg') }}" alt="Carregando..." style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+        </div>
+
+        <div id="map-container"></div>
+        <div id="map-tooltip" class="tooltip"></div>
+        
+    </div>
+<script src="{{ url_for('static', filename='search.js') }}"></script>
+<script src="{{ url_for('static', filename='mapa.js') }}"></script>
+<script>
+  // ATIVA A TRAVA EXCLUSIVAMENTE NA HOME: Avisa o mapa.js para esperar a rolagem terminar
+  window.REQUER_ROLAGEM_MAPA = true;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Força o topo superior no carregamento instântaneo
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    
+    // Aguarda os 2 segundos iniciais de leitura
+    setTimeout(() => {
+      const mapSection = document.querySelector('.map-section');
+      if (mapSection) {
+        // Executa a descida fluida até o mapa
+        mapSection.scrollIntoView({ behavior: 'smooth' });
+        
+        // Aguarda 1 segundo da transição do scroll acabar para sumir com o logo
+        setTimeout(() => {
+          window.rolagemMapaConcluida = true;
+          if (typeof window.dispararFadeSplash === 'function') {
+            window.dispararFadeSplash();
+          }
+        }, 1000);
+      }
+    }, 4500);
+  });
+</script>
+
+</body>
+</html>

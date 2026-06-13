@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ c1.nome }} vs {{ c2.nome }} — Datapólis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% set show_nav_search = True %}
+    {% include 'components/navbar.html' %} 
+
+    {% macro sofa_row(title, raw1, raw2, is_pct=False, is_reverse=False) %}
+      {% if raw1 is not none and raw2 is not none %}
+        {% set v1 = raw1|float %}
+        {% set v2 = raw2|float %}
+        
+        {# Calcula proporção para as barras #}
+        {% set max_v = v1 if v1 > v2 else v2 %}
+        {% set w1 = (v1 / max_v * 100) if max_v > 0 else 0 %}
+        {% set w2 = (v2 / max_v * 100) if max_v > 0 else 0 %}
+        
+        {# Lógica de quem ganhou (reverse = indica que Menor é Melhor, ex: Mortalidade/Crimes) #}
+        {% set winner1 = (v1 > v2) if not is_reverse else (v1 < v2) %}
+        {% set winner2 = (v2 > v1) if not is_reverse else (v2 < v1) %}
+        {% set tie = (v1 == v2) %}
+
+        {# Formatação Inteligente #}
+        {% set str1 = "{:,}".format(raw1).replace(',', '.') if raw1 is number and raw1 % 1 == 0 else raw1|string|replace('.', ',') %}
+        {% set str2 = "{:,}".format(raw2).replace(',', '.') if raw2 is number and raw2 % 1 == 0 else raw2|string|replace('.', ',') %}
+
+        {# O TRUQUE DEFINITIVO: Montamos o atributo INTEIRO no Jinja para o VS Code nem ver a palavra 'style' #}
+        {% set attr_w1 = 'style="width: ' ~ w1 ~ '%;"' %}
+        {% set attr_w2 = 'style="width: ' ~ w2 ~ '%;"' %}
+
+        <div class="sofa-row">
+          <div class="sofa-labels">
+            <div class="sofa-val">{{ str1 }}{% if is_pct %}%{% endif %}</div>
+            <div class="sofa-title">{{ title }}</div>
+            <div class="sofa-val right">{{ str2 }}{% if is_pct %}%{% endif %}</div>
+          </div>
+          <div class="sofa-bars">
+            <div class="sofa-half sofa-left-half">
+              <div class="sofa-fill c1 {% if winner2 and not tie %}loser{% endif %}" {{ attr_w1 | safe }}></div>
+            </div>
+            <div class="sofa-half sofa-right-half">
+              <div class="sofa-fill c2 {% if winner1 and not tie %}loser{% endif %}" {{ attr_w2 | safe }}></div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endmacro %}
+
+    <div class="page-header">
+        <div class="breadcrumb" style="margin-bottom: 0;">
+            <a href="/">Municípios</a> › <span>Comparação de Indicadores</span>
+        </div>
+    </div>
+
+    <div class="main" style="display: block;">
+        
+        <div class="compare-header">
+            <div class="vs-row">
+                <div class="vs-city">
+                    <h2 style="color: var(--accent2);">{{ c1.nome }}</h2>
+                    <span>{{ c1.uf }} · {{ "{:,}".format(c1.populacao).replace(',', '.') if c1.populacao else 'N/D' }} hab.</span>
+                </div>
+                <div class="vs-badge">VS</div>
+                <div class="vs-city">
+                    <h2 style="color: var(--accent);">{{ c2.nome }}</h2>
+                    <span>{{ c2.uf }} · {{ "{:,}".format(c2.populacao).replace(',', '.') if c2.populacao else 'N/D' }} hab.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sofa-container">
+            {{ sofa_row('População Residente', c1.populacao, c2.populacao) }}
+
+            {{ sofa_row('Nota IDEB (Educação)', c1.ideb_anos_iniciais, c2.ideb_anos_iniciais) }}
+            
+            {{ sofa_row('Cobertura Atenção Primária', c1.cobertura_aps, c2.cobertura_aps, is_pct=True) }}
+            
+            {{ sofa_row('Mortalidade Infantil / mil', c1.mortalidade_infantil, c2.mortalidade_infantil, is_reverse=True) }}
+            
+            {{ sofa_row('Ocorrências / 100 mil hab.', c1.ocorrencias_criminais, c2.ocorrencias_criminais, is_reverse=True) }}
+            
+            {{ sofa_row('Famílias no Bolsa Família', c1.bolsa_familia_beneficiarios, c2.bolsa_familia_beneficiarios) }}
+            
+            {{ sofa_row('Gastos com Saúde', c1.despesa_saude_pct, c2.despesa_saude_pct, is_pct=True) }}
+            
+            {{ sofa_row('Gastos com Segurança', c1.despesa_seguranca_pct, c2.despesa_seguranca_pct, is_pct=True) }}
+        </div>
+
+    </div>
+
+    {% include 'components/footer.html' %}
+    <script src="{{ url_for('static', filename='search.js') }}"></script>
+</body>
+</html>

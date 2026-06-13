@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datapólis — {{ dados.nome }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+</head>
+<body>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+  {% set show_nav_search = True %}
+  {% include 'components/navbar.html' %} 
+
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="/">Municípios</a> › <span>{{ dados.uf }}</span> › <span>{{ dados.nome }}</span>
+  </div>
+
+  <div class="city-row">
+    <div>
+      <div class="city-title">{{ dados.nome }}</div>
+      <div class="city-meta">{{ dados.uf }} · Região {{ dados.regiao }} · {% if dados.populacao is not none %}{{ "{:,}".format(dados.populacao).replace(',', '.') }}{% else %}N/D{% endif %} habitantes · {% if dados.capital %}Capital{% else %}Interior{% endif %} · Código IBGE: {{ dados.codigo_ibge }}</div>
+    </div>
+    <a href="/comparar/{{ dados.codigo_ibge }}" style="text-decoration: none;">
+      <button class="compare-btn">+ Comparar com outra cidade</button>
+    </a>
+  </div>
+
+  <div class="filter-row">
+    <span class="pill active" onclick="togglePill(this, 'todos')">Todos</span>
+    <span class="pill" onclick="togglePill(this, 'edu')">Educação</span>
+    <span class="pill" onclick="togglePill(this, 'saude')">Saúde</span>
+    <span class="pill" onclick="togglePill(this, 'seguranca')">Segurança</span>
+    <span class="pill" onclick="togglePill(this, 'orcamento')">Orçamento</span>
+    <span class="pill" onclick="togglePill(this, 'assistencia')">Assistência Social</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="kpi-row">
+    
+    <div class="kpi-card edu" data-cat="edu">
+      <div class="kpi-cat edu">Educação</div>
+      {% if dados.ideb_anos_iniciais is not none %}
+        <div class="kpi-value">{{ dados.ideb_anos_iniciais | replace(".", ",") }}</div>
+        <div class="kpi-label">Nota IDEB — Anos Iniciais</div>
+        <div class="kpi-delta {% if dados.ideb_delta > 0 %}up{% elif dados.ideb_delta < 0 %}down{% else %}neu{% endif %}">
+          {% if dados.ideb_delta > 0 %}▲ +{% elif dados.ideb_delta < 0 %}▼ {% else %}— {% endif %}{{ dados.ideb_delta | replace(".", ",") }} em relação a 2021
+        </div>
+      {% else %}
+        <div class="kpi-value" style="font-size: 1.2rem; margin-top: 10px; color: var(--mid);">Sem dados<br>suficientes</div>
+        <div class="kpi-label" style="margin-top: 8px;">Aguardando atualização do INEP</div>
+      {% endif %}
+    </div>
+
+    <div class="kpi-card saude" data-cat="saude">
+      <div class="kpi-cat saude">Saúde</div>
+      {% if dados.cobertura_aps is not none %}
+        <div class="kpi-value">{{ dados.cobertura_aps | replace(".", ",") }}%</div>
+        <div class="kpi-label">Cobertura Atenção Primária</div>
+        <div class="kpi-delta neu">Média BR: 71%</div>
+      {% else %}
+        <div class="kpi-value" style="font-size: 1.2rem; margin-top: 10px; color: var(--mid);">Sem dados<br>suficientes</div>
+        <div class="kpi-label" style="margin-top: 8px;">Aguardando atualização do DATASUS</div>
+      {% endif %}
+    </div>
+
+    <div class="kpi-card saude" data-cat="saude">
+      <div class="kpi-cat saude">Saúde</div>
+      {% if dados.mortalidade_infantil is not none %}
+        <div class="kpi-value">{{ dados.mortalidade_infantil | replace(".", ",") }}</div>
+        <div class="kpi-label">Mortalidade infantil / mil</div>
+        <div class="kpi-delta {% if dados.mortalidade_delta < 0 %}up{% elif dados.mortalidade_delta > 0 %}down{% else %}neu{% endif %}">
+          {% if dados.mortalidade_delta < 0 %}▼ {% elif dados.mortalidade_delta > 0 %}▲ +{% else %}— {% endif %}{{ dados.mortalidade_delta | replace(".", ",") }} em relação a 2022
+        </div>
+      {% else %}
+        <div class="kpi-value" style="font-size: 1.2rem; margin-top: 10px; color: var(--mid);">Sem dados<br>suficientes</div>
+        <div class="kpi-label" style="margin-top: 8px;">Aguardando atualização do DATASUS</div>
+      {% endif %}
+    </div>
+
+    <div class="kpi-card seg" data-cat="seguranca">
+      <div class="kpi-cat seg">Segurança</div>
+      {% if dados.ocorrencias_criminais is not none %}
+        <div class="kpi-value">{{ dados.ocorrencias_criminais }}</div>
+        <div class="kpi-label">Ocorrências / 100 mil hab.</div>
+        <div class="kpi-delta {% if dados.ocorrencias_delta < 0 %}up{% elif dados.ocorrencias_delta > 0 %}down{% else %}neu{% endif %}">
+          {% if dados.ocorrencias_delta < 0 %}▼ {% elif dados.ocorrencias_delta > 0 %}▲ +{% else %}— {% endif %}{{ dados.ocorrencias_delta }} em relação a 2022
+        </div>
+      {% else %}
+        <div class="kpi-value" style="font-size: 1.2rem; margin-top: 10px; color: var(--mid);">Sem dados<br>suficientes</div>
+        <div class="kpi-label" style="margin-top: 8px;">Aguardando atualização do SINESP</div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <div class="chart-card" data-cat="orcamento">
+    <div class="card-title">Despesas por Função Orçamentária</div>
+    <div class="card-sub">% do total de despesas liquidadas — 2024</div>
+    <div class="bar-chart" id="barChart"></div>
+    <div class="source-row">
+      <span class="source-label">Fonte</span>
+      <span class="badge badge-orange">SICONFI</span>
+      <span class="badge badge-blue">dados.gov.br</span>
+    </div>
+  </div>
+
+  <div class="chart-card" data-cat="edu">
+    <div class="card-title">Evolução IDEB — Anos Iniciais</div>
+    <div class="card-sub">Comparativo: {{ dados.nome }} × Média Nacional</div>
+    
+    {% if dados.ideb_anos_iniciais is not none %}
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-line" style="background:#1a3a5c; height:2.5px;"></div>
+        <span style="color:#0f1117">{{ dados.nome }}</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line dashed"></div>
+        <span>Média Nacional</span>
+      </div>
+    </div>
+    <div class="line-chart-wrap">
+      <svg viewBox="0 0 540 200" xmlns="http://www.w3.org/2000/svg">
+        <line x1="50" y1="20"  x2="520" y2="20"  stroke="#d8d2c4" stroke-width="0.5" stroke-dasharray="4,3"/>
+        <line x1="50" y1="65"  x2="520" y2="65"  stroke="#d8d2c4" stroke-width="0.5" stroke-dasharray="4,3"/>
+        <line x1="50" y1="110" x2="520" y2="110" stroke="#d8d2c4" stroke-width="0.5" stroke-dasharray="4,3"/>
+        <line x1="50" y1="155" x2="520" y2="155" stroke="#d8d2c4" stroke-width="0.5" stroke-dasharray="4,3"/>
+        <line x1="50" y1="20"  x2="50"  y2="165" stroke="#d8d2c4" stroke-width="1"/>
+        <line x1="50" y1="165" x2="520" y2="165" stroke="#d8d2c4" stroke-width="1"/>
+        <text x="44" y="168" font-size="9" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">3,5</text>
+        <text x="44" y="113" font-size="9" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">4,5</text>
+        <text x="44" y="68"  font-size="9" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">5,5</text>
+        <text x="44" y="23"  font-size="9" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">6,5</text>
+        <text x="80"  y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2013</text>
+        <text x="160" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2015</text>
+        <text x="240" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2017</text>
+        <text x="320" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2019</text>
+        <text x="400" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2021</text>
+        <text x="480" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2023</text>
+        <polyline points="80,130 160,118 240,107 320,98 400,90 480,72" stroke="#1a3a5c" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="80"  cy="130" r="4" fill="#1a3a5c"/>
+        <circle cx="160" cy="118" r="4" fill="#1a3a5c"/>
+        <circle cx="240" cy="107" r="4" fill="#1a3a5c"/>
+        <circle cx="320" cy="98"  r="4" fill="#1a3a5c"/>
+        <circle cx="400" cy="90"  r="4" fill="#1a3a5c"/>
+        <circle cx="480" cy="72"  r="5" fill="#1a3a5c"/>
+        <text x="488" y="68" font-size="10" fill="#1a3a5c" font-weight="700" font-family="Syne, Arial Black, sans-serif">{{ dados.ideb_anos_iniciais | replace(".", ",") }}</text>
+        <polyline points="80,145 160,138 240,131 320,125 400,120 480,110" stroke="#d4500a" stroke-width="2" fill="none" stroke-dasharray="6,4" stroke-linecap="round"/>
+        <circle cx="480" cy="110" r="4" fill="#d4500a"/>
+        <text x="488" y="113" font-size="10" fill="#d4500a" font-family="Syne, Arial Black, sans-serif">5,1</text>
+      </svg>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding: 4.5rem 0; color: var(--mid); font-weight: 500; font-size: 0.9rem;">
+      Histórico de evolução educacional indisponível para este município. <br>
+      <span style="font-size: 0.78rem; font-weight: 300;">Aguardando processamento dos microdados do IDEB (INEP).</span>
+    </div>
+    {% endif %}
+    
+    <div class="source-row">
+      <span class="source-label">Fonte</span>
+      <span class="badge badge-blue">INEP</span>
+    </div>
+  </div>
+
+  <div class="chart-card" data-cat="assistencia">
+    <div class="card-title">Beneficiários do Bolsa Família</div>
+    <div class="card-sub">Evolução mensal — jan a mai/2025</div>
+    <div class="spark-row">
+      <div class="spark-info">
+        {% if dados.bolsa_familia_beneficiarios is not none %}
+          <div class="spark-big">{{ "{:,}".format(dados.bolsa_familia_beneficiarios).replace(',', '.') }}</div>
+          <div class="spark-label">famílias em mai/2025</div>
+          <div class="kpi-delta {% if dados.bolsa_familia_delta > 0 %}up{% elif dados.bolsa_familia_delta < 0 %}down{% else %}neu{% endif %}" style="margin-top:.3rem; font-size:.75rem;">
+              {% if dados.bolsa_familia_delta > 0 %}▲ +{% elif dados.bolsa_familia_delta < 0 %}▼ {% else %}— {% endif %}{{ dados.bolsa_familia_delta | replace(".", ",") }}% vs jan/2025
+          </div>
+        {% else %}
+          <div class="spark-big" style="font-size: 1.5rem; color: var(--mid);">Sem dados</div>
+          <div class="spark-label" style="margin-top: 5px;">Aguardando MDS</div>
+        {% endif %}
+      </div>
+      <div class="spark-svg">
+        <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1a3a5c" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#1a3a5c" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="10,45 60,32 110,38 160,22 210,28 260,15 260,55 10,55" fill="url(#sparkGrad)"/>
+          <polyline points="10,45 60,32 110,38 160,22 210,28 260,15" stroke="#1a3a5c" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="260" cy="15" r="4" fill="#1a3a5c"/>
+          <text x="10"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">jan</text>
+          <text x="55"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">fev</text>
+          <text x="105" y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">mar</text>
+          <text x="155" y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">abr</text>
+          <text x="250" y="57" font-size="8" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">mai</text>
+        </svg>
+      </div>
+    </div>
+    <div class="source-row">
+      <span class="source-label">Fonte</span>
+      <span class="badge badge-blue">MDS</span>
+      <span class="badge badge-blue">dados.gov.br</span>
+    </div>
+  </div>
+
+  <div class="chart-card" data-cat="saude">
+    <div class="card-title">Mortalidade Infantil — Histórico</div>
+    <div class="card-sub">Por mil nascidos vivos — 2015 a 2023</div>
+    <div class="spark-row">
+      <div class="spark-info">
+        {% if dados.mortalidade_infantil is not none %}
+          <div class="spark-big">{{ dados.mortalidade_infantil | replace(".", ",") }}</div>
+          <div class="spark-label">óbitos/mil nasc. vivos (2023)</div>
+          <div class="kpi-delta down" style="margin-top:.3rem; font-size:.75rem;">▼ –32% desde 2015</div>
+        {% else %}
+          <div class="spark-big" style="font-size: 1.5rem; color: var(--mid);">Sem dados</div>
+          <div class="spark-label" style="margin-top: 5px;">Aguardando DATASUS</div>
+        {% endif %}
+      </div>
+      <div class="spark-svg">
+        <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="mortGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#d4500a" stop-opacity="0.12"/>
+              <stop offset="100%" stop-color="#d4500a" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="10,12 50,18 90,22 130,28 170,32 210,38 260,44 260,55 10,55" fill="url(#mortGrad)"/>
+          <polyline points="10,12 50,18 90,22 130,28 170,32 210,38 260,44" stroke="#d4500a" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="260" cy="44" r="4" fill="#d4500a"/>
+          <text x="10"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">2015</text>
+          <text x="248" y="57" font-size="8" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">2023</text>
+        </svg>
+      </div>
+    </div>
+    <div class="source-row">
+      <span class="source-label">Fonte</span>
+      <span class="badge badge-green">SINASC</span>
+      <span class="badge badge-green">DATASUS</span>
+    </div>
+  </div>
+
+ <div class="chart-card full" data-cat="todos">
+    <div class="card-title">Comparativo — Municípios com porte similar</div>
+    <div class="card-sub">5 municípios com população mais próxima no Brasil</div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Município</th>
+          <th>IDEB (Anos Iniciais)</th>
+          <th>Cobertura APS</th>
+          <th>Mort. Infantil</th>
+          <th>Ocorr. / 100 mil hab.</th>
+          <th>Benef. Bolsa Família</th>
+          <th>% Desp. Educação</th>
+          <th>% Desp. Saúde</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlighted">
+          <td>{{ dados.nome }} ({{ dados.uf }})</td>
+          <td>{% if dados.ideb_anos_iniciais is not none %}{{ dados.ideb_anos_iniciais | replace(".", ",") }}{% else %}N/D{% endif %}</td>
+          <td>{% if dados.cobertura_aps is not none %}{{ dados.cobertura_aps | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+          <td>{% if dados.mortalidade_infantil is not none %}{{ dados.mortalidade_infantil | replace(".", ",") }}{% else %}N/D{% endif %}</td>
+          <td>{% if dados.ocorrencias_criminais is not none %}{{ dados.ocorrencias_criminais }}{% else %}N/D{% endif %}</td>
+          <td>{% if dados.bolsa_familia_beneficiarios is not none %}{{ "{:,}".format(dados.bolsa_familia_beneficiarios).replace(',', '.') }}{% else %}N/D{% endif %}</td>
+          <td>{% if dados.despesa_educacao_pct is not none %}{{ dados.despesa_educacao_pct | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+          <td>{% if dados.despesa_saude_pct is not none %}{{ dados.despesa_saude_pct | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+        </tr>
+        
+        {% for sim in similares %}
+        <tr>
+          <td>
+             <a href="/municipio/{{ sim.codigo_ibge }}" style="color: inherit; text-decoration: none;">
+               {{ sim.nome }} ({{ sim.uf }})
+             </a>
+          </td>
+          <td>{% if sim.ideb_anos_iniciais is not none %}{{ sim.ideb_anos_iniciais | replace(".", ",") }}{% else %}N/D{% endif %}</td>
+          <td>{% if sim.cobertura_aps is not none %}{{ sim.cobertura_aps | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+          <td>{% if sim.mortalidade_infantil is not none %}{{ sim.mortalidade_infantil | replace(".", ",") }}{% else %}N/D{% endif %}</td>
+          <td>{% if sim.ocorrencias_criminais is not none %}{{ sim.ocorrencias_criminais }}{% else %}N/D{% endif %}</td>
+          <td>{% if sim.bolsa_familia_beneficiarios is not none %}{{ "{:,}".format(sim.bolsa_familia_beneficiarios).replace(',', '.') }}{% else %}N/D{% endif %}</td>
+          <td>{% if sim.despesa_educacao_pct is not none %}{{ sim.despesa_educacao_pct | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+          <td>{% if sim.despesa_saude_pct is not none %}{{ sim.despesa_saude_pct | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+        </tr>
+        {% endfor %}
+
+        <tr class="avg">
+          <td>Média dos similares</td>
+          <td>{% if media_similares.ideb is not none %}{{ media_similares.ideb | replace(".", ",") }}{% else %}N/D{% endif %}</td>
+          <td>{% if media_similares.aps is not none %}{{ media_similares.aps | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+          <td>{% if media_similares.mort is not none %}{{ media_similares.mort | replace(".", ",") }}{% else %}N/D{% endif %}</td>
+          <td>{% if media_similares.ocorrencias is not none %}{{ media_similares.ocorrencias }}{% else %}N/D{% endif %}</td>
+          <td>{% if media_similares.bolsa is not none %}{{ "{:,}".format(media_similares.bolsa).replace(',', '.') }}{% else %}N/D{% endif %}</td>
+          <td>{% if media_similares.edu is not none %}{{ media_similares.edu | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+          <td>{% if media_similares.sau is not none %}{{ media_similares.sau | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="source-row">
+      <span class="source-label">Fontes</span>
+      <span class="badge badge-blue">INEP</span>
+      <span class="badge badge-green">DATASUS</span>
+      <span class="badge badge-orange">SINESP</span>
+      <span class="badge badge-blue">MDS</span>
+      <span class="badge badge-orange">SICONFI</span>
+    </div>
+  </div>
+
+</div>{% include 'components/footer.html' %}
+
+<script src="{{ url_for('static', filename='search.js') }}"></script>
+
+<script>
+  // Função que constrói o gráfico de barras
+  const despesas = [
+    { label: 'Educação',      pct: JSON.parse("{{ dados.despesa_educacao_pct | default('null', true) }}"), color: '#1a3a5c' },
+    { label: 'Saúde',         pct: JSON.parse("{{ dados.despesa_saude_pct | default('null', true) }}"), color: '#1a3a5c', opacity: '.75' },
+    { label: 'Administração', pct: JSON.parse("{{ dados.despesa_administracao_pct | default('null', true) }}"), color: '#8a8070' },
+    { label: 'Segurança',     pct: JSON.parse("{{ dados.despesa_seguranca_pct | default('null', true) }}"), color: '#d4500a' },
+    { label: 'Infraestrutura',pct: JSON.parse("{{ dados.despesa_infraestrutura_pct | default('null', true) }}"), color: '#8a8070', opacity: '.6' },
+    { label: 'Outros',        pct: JSON.parse("{{ dados.despesa_outros_pct | default('null', true) }}"), color: '#d8d2c4' },
+  ];
+
+  const bc = document.getElementById('barChart');
+  
+  if (despesas[0].pct === null) {
+      bc.innerHTML = `<div style="text-align:center; padding: 2.5rem 0; color: var(--mid); font-weight: 500; font-size: 0.9rem;">Sem dados orçamentários suficientes no SICONFI para o exercício analisado.</div>`;
+  } else {
+      despesas.forEach(d => {
+        bc.innerHTML += `
+          <div class="bar-row">
+            <div class="bar-label">${d.label}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${d.pct}%; background:${d.color}; opacity:${d.opacity||1};"></div>
+            </div>
+            <div class="bar-val">${d.pct}%</div>
+          </div>`;
+      });
+  }
+
+  // Função das abas (Pills)
+  function togglePill(el, category) {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+
+    const elements = document.querySelectorAll('[data-cat]');
+    elements.forEach(item => {
+      if (category === 'todos' || item.getAttribute('data-cat') === category) {
+        item.style.display = ''; 
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    const kpiRow = document.querySelector('.kpi-row');
+    let visibleKpis = 0;
+    document.querySelectorAll('.kpi-row .kpi-card').forEach(c => {
+       if (c.style.display !== 'none') visibleKpis++;
+    });
+    
+    if (visibleKpis === 0) {
+       kpiRow.style.display = 'none';
+    } else {
+       kpiRow.style.display = 'flex';
+    }
+  }
+</script>
+
+</body>
+</html>

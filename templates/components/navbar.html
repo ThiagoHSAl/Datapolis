@@ -1,0 +1,21 @@
+<nav>
+  <a href="/" class="logo">
+    <img src="{{ url_for('static', filename='logo2.jpeg') }}" alt="Logo Datapólis" style="max-width: 100%; width: 300px; height: auto;">
+  </a>
+  
+  {% if show_nav_search %}
+  <div class="nav-search">
+    <div class="nav-search-inner">
+      <input id="navSearchInput" type="text" placeholder="Buscar outro município..." autocomplete="off"/>
+      <button>↵</button>
+    </div>
+    <div class="nav-dropdown" id="navDropdown"></div>
+  </div>
+  {% endif %}
+
+  <ul>
+    <li><a href="#">Indicadores</a></li>
+    <li><a href="/">Municípios</a></li>
+    <li><a href="#">Comparar</a></li>
+  </ul>
+</nav>

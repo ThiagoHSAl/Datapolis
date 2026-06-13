@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparar {{ cidade1.nome }} — Datapólis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <script>
+        window.URL_BASE_BUSCA = '/comparar/{{ cidade1.codigo_ibge }}/';
+        window.URL_BASE_MAPA  = '/comparar/{{ cidade1.codigo_ibge }}/';
+    </script>
+</head>
+<body>
+    {% set show_nav_search = False %}
+    {% include 'components/navbar.html' %} 
+
+    <div class="hero" style="padding-top: 3.5rem; padding-bottom: 2rem;">
+        <div class="hero-tag">Modo Confronto</div>
+        <h1>Com qual cidade você quer comparar <span class="highlight" style="color: var(--accent2);">{{ cidade1.nome }}</span>?</h1>
+        <p class="hero-sub">Selecione o segundo município navegando pelo mapa ou use a busca direta abaixo.</p>
+
+        <div class="search-wrap">
+            <div class="search-box">
+                <input id="mainSearch" type="text" class="search-input" placeholder="Buscar município adversário..." autocomplete="off">
+                <button class="search-btn">Buscar</button>
+            </div>
+            <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+        </div>
+    </div>
+
+    <div class="map-section" style="position: relative;">
+        
+        <div id="map-splash" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #eef2f5; z-index: 100; display: flex; align-items: center; justify-content: center; transition: opacity 1.5s ease-in-out;">
+            <img src="{{ url_for('static', filename='logo1.jpeg') }}" alt="Carregando Mapa..." style="max-width: 250px; max-height: 80%; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+        </div>
+
+        <div id="map-container"></div>
+        <div id="map-tooltip" class="tooltip"></div>
+        
+    </div>
+
+    {% include 'components/footer.html' %}
+    <script src="{{ url_for('static', filename='search.js') }}"></script>
+    <script src="{{ url_for('static', filename='mapa.js') }}"></script>
+</body>
+</html>
