@@ -67,29 +67,24 @@
       {% endif %}
     </div>
 
-    <div class="kpi-card saude" data-cat="saude">
-      <div class="kpi-cat saude">Saúde</div>
-      {% if dados.mortalidade_infantil is not none %}
-        <div class="kpi-value">{{ dados.mortalidade_infantil | replace(".", ",") }}</div>
-        <div class="kpi-label">Mortalidade infantil / mil</div>
-        <div class="kpi-delta {% if dados.mortalidade_delta < 0 %}up{% elif dados.mortalidade_delta > 0 %}down{% else %}neu{% endif %}">
-          {% if dados.mortalidade_delta < 0 %}▼ {% elif dados.mortalidade_delta > 0 %}▲ +{% else %}— {% endif %}{{ dados.mortalidade_delta | replace(".", ",") }} em relação a 2022
-        </div>
-      {% else %}
-        <div class="kpi-value" style="font-size: 1.2rem; margin-top: 10px; color: var(--mid);">Sem dados<br>suficientes</div>
-        <div class="kpi-label" style="margin-top: 8px;">Aguardando atualização do DATASUS</div>
-      {% endif %}
-    </div>
+    <div class="kpi-card saude" data-cat="orcamento">
+    <div class="kpi-cat saude">Economia</div>
+    {% if dados.pib_per_capita is not none %}
+      <div class="kpi-value">R$ {{ "{:,.2f}".format(dados.pib_per_capita | float).replace(",", "X").replace(".", ",").replace("X", ".") }}</div>
+      <div class="kpi-label">PIB per capita</div>
+      <div class="kpi-delta neu">Base: IBGE 2023</div>
+    {% else %}
+      <div class="kpi-value" style="font-size: 1.2rem; margin-top: 10px; color: var(--mid);">Sem dados</div>
+    {% endif %}
+  </div>
 
+   
     <div class="kpi-card seg" data-cat="seguranca">
       <div class="kpi-cat seg">Segurança</div>
       {% if dados.ocorrencias_criminais is not none %}
         <div class="kpi-value">{{ dados.ocorrencias_criminais }}</div>
         <div class="kpi-label">Ocorrências / 100 mil hab.</div>
-        <div class="kpi-delta {% if dados.ocorrencias_delta < 0 %}up{% elif dados.ocorrencias_delta > 0 %}down{% else %}neu{% endif %}">
-          {% if dados.ocorrencias_delta < 0 %}▼ {% elif dados.ocorrencias_delta > 0 %}▲ +{% else %}— {% endif %}{{ dados.ocorrencias_delta }} em relação a 2022
-        </div>
-      {% else %}
+        {% else %}
         <div class="kpi-value" style="font-size: 1.2rem; margin-top: 10px; color: var(--mid);">Sem dados<br>suficientes</div>
         <div class="kpi-label" style="margin-top: 8px;">Aguardando atualização do SINESP</div>
       {% endif %}
@@ -108,143 +103,216 @@
     </div>
   </div>
 
+
   <div class="chart-card" data-cat="edu">
     <div class="card-title">Evolução IDEB — Anos Iniciais</div>
-    <div class="card-sub">Comparativo: {{ dados.nome }} × Média Nacional</div>
+    <div class="card-sub">Comparativo da nota — Edições 2021 vs 2023</div>
     
-    {% if dados.ideb_anos_iniciais is not none %}
-    <div class="legend">
-      <div class="legend-item">
-        <div class="legend-line" style="background:#1a3a5c; height:2.5px;"></div>
-        <span style="color:#0f1117">{{ dados.nome }}</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-line dashed"></div>
-        <span>Média Nacional</span>
-      </div>
-    </div>
-    <div class="line-chart-wrap">
-      <svg viewBox="0 0 540 200" xmlns="http://www.w3.org/2000/svg">
-        <line x1="50" y1="20"  x2="520" y2="20"  stroke="#d8d2c4" stroke-width="0.5" stroke-dasharray="4,3"/>
-        <line x1="50" y1="65"  x2="520" y2="65"  stroke="#d8d2c4" stroke-width="0.5" stroke-dasharray="4,3"/>
-        <line x1="50" y1="110" x2="520" y2="110" stroke="#d8d2c4" stroke-width="0.5" stroke-dasharray="4,3"/>
-        <line x1="50" y1="155" x2="520" y2="155" stroke="#d8d2c4" stroke-width="0.5" stroke-dasharray="4,3"/>
-        <line x1="50" y1="20"  x2="50"  y2="165" stroke="#d8d2c4" stroke-width="1"/>
-        <line x1="50" y1="165" x2="520" y2="165" stroke="#d8d2c4" stroke-width="1"/>
-        <text x="44" y="168" font-size="9" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">3,5</text>
-        <text x="44" y="113" font-size="9" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">4,5</text>
-        <text x="44" y="68"  font-size="9" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">5,5</text>
-        <text x="44" y="23"  font-size="9" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">6,5</text>
-        <text x="80"  y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2013</text>
-        <text x="160" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2015</text>
-        <text x="240" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2017</text>
-        <text x="320" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2019</text>
-        <text x="400" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2021</text>
-        <text x="480" y="178" font-size="9" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2023</text>
-        <polyline points="80,130 160,118 240,107 320,98 400,90 480,72" stroke="#1a3a5c" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="80"  cy="130" r="4" fill="#1a3a5c"/>
-        <circle cx="160" cy="118" r="4" fill="#1a3a5c"/>
-        <circle cx="240" cy="107" r="4" fill="#1a3a5c"/>
-        <circle cx="320" cy="98"  r="4" fill="#1a3a5c"/>
-        <circle cx="400" cy="90"  r="4" fill="#1a3a5c"/>
-        <circle cx="480" cy="72"  r="5" fill="#1a3a5c"/>
-        <text x="488" y="68" font-size="10" fill="#1a3a5c" font-weight="700" font-family="Syne, Arial Black, sans-serif">{{ dados.ideb_anos_iniciais | replace(".", ",") }}</text>
-        <polyline points="80,145 160,138 240,131 320,125 400,120 480,110" stroke="#d4500a" stroke-width="2" fill="none" stroke-dasharray="6,4" stroke-linecap="round"/>
-        <circle cx="480" cy="110" r="4" fill="#d4500a"/>
-        <text x="488" y="113" font-size="10" fill="#d4500a" font-family="Syne, Arial Black, sans-serif">5,1</text>
-      </svg>
-    </div>
-    {% else %}
-    <div style="text-align:center; padding: 4.5rem 0; color: var(--mid); font-weight: 500; font-size: 0.9rem;">
-      Histórico de evolução educacional indisponível para este município. <br>
-      <span style="font-size: 0.78rem; font-weight: 300;">Aguardando processamento dos microdados do IDEB (INEP).</span>
-    </div>
-    {% endif %}
-    
-    <div class="source-row">
-      <span class="source-label">Fonte</span>
-      <span class="badge badge-blue">INEP</span>
-    </div>
-  </div>
-
-  <div class="chart-card" data-cat="assistencia">
-    <div class="card-title">Beneficiários do Bolsa Família</div>
-    <div class="card-sub">Evolução mensal — jan a mai/2025</div>
     <div class="spark-row">
       <div class="spark-info">
-        {% if dados.bolsa_familia_beneficiarios is not none %}
-          <div class="spark-big">{{ "{:,}".format(dados.bolsa_familia_beneficiarios).replace(',', '.') }}</div>
-          <div class="spark-label">famílias em mai/2025</div>
-          <div class="kpi-delta {% if dados.bolsa_familia_delta > 0 %}up{% elif dados.bolsa_familia_delta < 0 %}down{% else %}neu{% endif %}" style="margin-top:.3rem; font-size:.75rem;">
-              {% if dados.bolsa_familia_delta > 0 %}▲ +{% elif dados.bolsa_familia_delta < 0 %}▼ {% else %}— {% endif %}{{ dados.bolsa_familia_delta | replace(".", ",") }}% vs jan/2025
+        {% if dados.ideb_anos_iniciais is not none and dados.ideb_delta is not none %}
+          <div class="spark-big">{{ dados.ideb_anos_iniciais | replace(".", ",") }}</div>
+          
+          <div class="spark-label">
+            Nota em 2023 
+            {% if media_nacional_ideb %}
+              <span style="color: var(--mid); margin-left: 4px;">(Média BR: {{ media_nacional_ideb | replace(".", ",") }})</span>
+            {% endif %}
+          </div>
+          
+          <div class="kpi-delta {% if dados.ideb_delta > 0 %}up{% elif dados.ideb_delta < 0 %}down{% else %}neu{% endif %}" style="margin-top:.3rem; font-size:.75rem;">
+              {% if dados.ideb_delta > 0 %}▲ +{% elif dados.ideb_delta < 0 %}▼ {% else %}— {% endif %}{{ dados.ideb_delta | replace(".", ",") }} pontos vs 2021
           </div>
         {% else %}
           <div class="spark-big" style="font-size: 1.5rem; color: var(--mid);">Sem dados</div>
-          <div class="spark-label" style="margin-top: 5px;">Aguardando MDS</div>
+          <div class="spark-label" style="margin-top: 5px;">Aguardando INEP</div>
         {% endif %}
       </div>
+      
       <div class="spark-svg">
-        <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#1a3a5c" stop-opacity="0.15"/>
-              <stop offset="100%" stop-color="#1a3a5c" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <polygon points="10,45 60,32 110,38 160,22 210,28 260,15 260,55 10,55" fill="url(#sparkGrad)"/>
-          <polyline points="10,45 60,32 110,38 160,22 210,28 260,15" stroke="#1a3a5c" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="260" cy="15" r="4" fill="#1a3a5c"/>
-          <text x="10"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">jan</text>
-          <text x="55"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">fev</text>
-          <text x="105" y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">mar</text>
-          <text x="155" y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">abr</text>
-          <text x="250" y="57" font-size="8" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">mai</text>
-        </svg>
+        {% if dados.ideb_anos_iniciais is not none and dados.ideb_delta is not none %}
+          
+          {# Lógica Jinja para a inclinação da linha #}
+          {% set delta = dados.ideb_delta | float %}
+          
+          {# Cor azul institucional #}
+          {% set cor = "#1a3a5c" %}
+          
+          {# Limitador visual para o SVG não quebrar (max 20px de desvio). 
+            Como o delta do IDEB é em pontos (ex: 0.5), multiplicamos por 10 para dar efeito visual #}
+          {% set lim_delta = delta * 15 %}
+          {% set lim_delta = 20 if lim_delta > 20 else lim_delta %}
+          {% set lim_delta = -20 if lim_delta < -20 else lim_delta %}
+          
+          {# Eixo Y (invertido no SVG) #}
+          {% set y2021 = 25 + lim_delta %}
+          {% set y2023 = 25 - lim_delta %}
+
+          <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="idebGradDin" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="{{ cor }}" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="{{ cor }}" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            
+            <polygon points="10,{{ y2021 }} 250,{{ y2023 }} 250,55 10,55" fill="url(#idebGradDin)"/>
+            
+            <polyline points="10,{{ y2021 }} 250,{{ y2023 }}" stroke="{{ cor }}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <circle cx="10" cy="{{ y2021 }}" r="3" fill="{{ cor }}"/>
+            <circle cx="250" cy="{{ y2023 }}" r="4" fill="{{ cor }}"/>
+            
+            <text x="10"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">2021</text>
+            <text x="250" y="57" font-size="8" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">2023</text>
+          </svg>
+        {% endif %}
       </div>
     </div>
-    <div class="source-row">
-      <span class="source-label">Fonte</span>
-      <span class="badge badge-blue">MDS</span>
-      <span class="badge badge-blue">dados.gov.br</span>
+  
+  <div class="source-row">
+    <span class="source-label">Fonte</span>
+    <span class="badge badge-blue">INEP</span>
+  </div>
+</div>
+
+  <div class="chart-card" data-cat="assistencia">
+  <div class="card-title">Beneficiários do Bolsa Família</div>
+  <div class="card-sub">Evolução mensal — Comparativo Nov/2025 vs Dez/2025</div>
+  
+  <div class="spark-row">
+    <div class="spark-info">
+      {% if dados.bolsa_familia_beneficiarios is not none and dados.bolsa_familia_delta is not none %}
+        <div class="spark-big">{{ "{:,}".format(dados.bolsa_familia_beneficiarios).replace(',', '.') }}</div>
+        <div class="spark-label">famílias beneficiadas (Dez 2025)</div>
+        
+        <div class="kpi-delta {% if dados.bolsa_familia_delta > 0 %}up{% elif dados.bolsa_familia_delta < 0 %}down{% else %}neu{% endif %}" style="margin-top:.3rem; font-size:.75rem;">
+            {% if dados.bolsa_familia_delta > 0 %}▲ +{% elif dados.bolsa_familia_delta < 0 %}▼ {% else %}— {% endif %}{{ dados.bolsa_familia_delta | replace(".", ",") }}% vs Nov 2025
+        </div>
+      {% else %}
+        <div class="spark-big" style="font-size: 1.5rem; color: var(--mid);">Sem dados</div>
+        <div class="spark-label" style="margin-top: 5px;">Aguardando MDS</div>
+      {% endif %}
+    </div>
+    
+    <div class="spark-svg">
+      {% if dados.bolsa_familia_beneficiarios is not none and dados.bolsa_familia_delta is not none %}
+        
+        {# Lógica Jinja para a inclinação da linha #}
+        {% set delta = dados.bolsa_familia_delta | float %}
+        
+        {# Cor azul institucional do Datapólis #}
+        {% set cor = "#1a3a5c" %}
+        
+        {# Limitador visual para o SVG não quebrar (max 20px de desvio) #}
+        {% set lim_delta = delta %}
+        {% set lim_delta = 20 if lim_delta > 20 else lim_delta %}
+        {% set lim_delta = -20 if lim_delta < -20 else lim_delta %}
+        
+        {# Eixo Y (invertido no SVG: se delta > 0, y2024 sobe visualmente na tela) #}
+        {% set y2023 = 25 + lim_delta %}
+        {% set y2024 = 25 - lim_delta %}
+
+        <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bolsaGradDin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="{{ cor }}" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="{{ cor }}" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          
+          <polygon points="10,{{ y2023 }} 250,{{ y2024 }} 250,55 10,55" fill="url(#bolsaGradDin)"/>
+          
+          <polyline points="10,{{ y2023 }} 250,{{ y2024 }}" stroke="{{ cor }}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          
+          <circle cx="10" cy="{{ y2023 }}" r="3" fill="{{ cor }}"/>
+          <circle cx="250" cy="{{ y2024 }}" r="4" fill="{{ cor }}"/>
+          
+          <text x="10"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">Nov/2025</text>
+          <text x="250" y="57" font-size="8" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">Dez/2025</text>
+        </svg>
+      {% endif %}
     </div>
   </div>
+  
+  <div class="source-row">
+    <span class="source-label">Fonte</span>
+    <span class="badge badge-blue">MDS</span>
+    <span class="badge badge-blue">dados.gov.br</span>
+  </div>
+</div>
 
   <div class="chart-card" data-cat="saude">
-    <div class="card-title">Mortalidade Infantil — Histórico</div>
-    <div class="card-sub">Por mil nascidos vivos — 2015 a 2023</div>
-    <div class="spark-row">
-      <div class="spark-info">
-        {% if dados.mortalidade_infantil is not none %}
-          <div class="spark-big">{{ dados.mortalidade_infantil | replace(".", ",") }}</div>
-          <div class="spark-label">óbitos/mil nasc. vivos (2023)</div>
-          <div class="kpi-delta down" style="margin-top:.3rem; font-size:.75rem;">▼ –32% desde 2015</div>
-        {% else %}
-          <div class="spark-big" style="font-size: 1.5rem; color: var(--mid);">Sem dados</div>
-          <div class="spark-label" style="margin-top: 5px;">Aguardando DATASUS</div>
-        {% endif %}
-      </div>
-      <div class="spark-svg">
+  <div class="card-title">Mortalidade Infantil — Evolução</div>
+  <div class="card-sub">Por mil nascidos vivos — Comparativo 2023 vs 2024</div>
+  
+  <div class="spark-row">
+    <div class="spark-info">
+      {% if dados.mortalidade_infantil is not none and dados.mortalidade_delta is not none %}
+        <div class="spark-big">{{ dados.mortalidade_infantil | replace(".", ",") }}</div>
+        <div class="spark-label">óbitos/mil nasc. vivos (2024)</div>
+        
+        <div class="kpi-delta {% if dados.mortalidade_delta > 0 %}down{% elif dados.mortalidade_delta < 0 %}up{% else %}neu{% endif %}" style="margin-top:.3rem; font-size:.75rem;">
+          {% if dados.mortalidade_delta > 0 %}
+            ▲ +{{ dados.mortalidade_delta | replace(".", ",") }}% piora vs 2023
+          {% elif dados.mortalidade_delta < 0 %}
+            ▼ {{ dados.mortalidade_delta | replace(".", ",") }}% melhora vs 2023
+          {% else %}
+            — Estável vs 2023
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="spark-big" style="font-size: 1.5rem; color: var(--mid);">Sem dados</div>
+        <div class="spark-label" style="margin-top: 5px;">Aguardando DATASUS</div>
+      {% endif %}
+    </div>
+
+    <div class="spark-svg">
+      {% if dados.mortalidade_infantil is not none and dados.mortalidade_delta is not none %}
+        
+        {# Lógica Jinja para definir a cor e a inclinação da linha #}
+        {% set delta = dados.mortalidade_delta | float %}
+        
+        {# Cor: Vermelho se subiu (ruim), Verde se caiu (bom), Laranja se zerado #}
+        {% set cor = "#c0392b" if delta > 0 else ("#3a7d2c" if delta < 0 else "#d4500a") %}
+        
+        {# Limitador visual para o SVG não desenhar a linha fora da caixa (max 20px de desvio) #}
+        {% set lim_delta = delta %}
+        {% set lim_delta = 20 if lim_delta > 20 else lim_delta %}
+        {% set lim_delta = -20 if lim_delta < -20 else lim_delta %}
+        
+        {# Eixo Y (invertido no SVG: quanto menor o valor, mais alto na tela) #}
+        {% set y2023 = 25 + lim_delta %}
+        {% set y2024 = 25 - lim_delta %}
+
         <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="mortGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#d4500a" stop-opacity="0.12"/>
-              <stop offset="100%" stop-color="#d4500a" stop-opacity="0"/>
+            <linearGradient id="mortGradDin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="{{ cor }}" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="{{ cor }}" stop-opacity="0"/>
             </linearGradient>
           </defs>
-          <polygon points="10,12 50,18 90,22 130,28 170,32 210,38 260,44 260,55 10,55" fill="url(#mortGrad)"/>
-          <polyline points="10,12 50,18 90,22 130,28 170,32 210,38 260,44" stroke="#d4500a" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="260" cy="44" r="4" fill="#d4500a"/>
-          <text x="10"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">2015</text>
-          <text x="248" y="57" font-size="8" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">2023</text>
+          
+          <polygon points="10,{{ y2023 }} 250,{{ y2024 }} 250,55 10,55" fill="url(#mortGradDin)"/>
+          
+          <polyline points="10,{{ y2023 }} 250,{{ y2024 }}" stroke="{{ cor }}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          
+          <circle cx="10" cy="{{ y2023 }}" r="3" fill="{{ cor }}"/>
+          <circle cx="250" cy="{{ y2024 }}" r="4" fill="{{ cor }}"/>
+          
+          <text x="10"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">2023</text>
+          <text x="250" y="57" font-size="8" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">2024</text>
         </svg>
-      </div>
-    </div>
-    <div class="source-row">
-      <span class="source-label">Fonte</span>
-      <span class="badge badge-green">SINASC</span>
-      <span class="badge badge-green">DATASUS</span>
+      {% endif %}
     </div>
   </div>
+  
+  <div class="source-row">
+    <span class="source-label">Fonte</span>
+    <span class="badge badge-green">SINASC</span>
+    <span class="badge badge-green">DATASUS</span>
+  </div>
+</div>
 
  <div class="chart-card full" data-cat="todos">
     <div class="card-title">Comparativo — Municípios com porte similar</div>
@@ -318,7 +386,7 @@
 <script src="{{ url_for('static', filename='search.js') }}"></script>
 
 <script>
-  // Função que constrói o gráfico de barras
+  // Função que constrói o gráfico de barras protegido
   const despesas = [
     { label: 'Educação',      pct: JSON.parse("{{ dados.despesa_educacao_pct | default('null', true) }}"), color: '#1a3a5c' },
     { label: 'Saúde',         pct: JSON.parse("{{ dados.despesa_saude_pct | default('null', true) }}"), color: '#1a3a5c', opacity: '.75' },
@@ -330,9 +398,11 @@
 
   const bc = document.getElementById('barChart');
   
-  if (despesas[0].pct === null) {
+  // Se o percentual for nulo, indefinido ou estritamente 0 (caso de Fernando de Noronha), exibe mensagem amigável
+  if (despesas[0].pct === null || despesas[0].pct === 0) {
       bc.innerHTML = `<div style="text-align:center; padding: 2.5rem 0; color: var(--mid); font-weight: 500; font-size: 0.9rem;">Sem dados orçamentários suficientes no SICONFI para o exercício analisado.</div>`;
   } else {
+      bc.innerHTML = ''; // Limpa o container
       despesas.forEach(d => {
         bc.innerHTML += `
           <div class="bar-row">
