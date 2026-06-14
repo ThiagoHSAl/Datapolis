@@ -26,9 +26,9 @@
         {% set winner2 = (v2 > v1) if not is_reverse else (v2 < v1) %}
         {% set tie = (v1 == v2) %}
 
-        {# Formatação Inteligente #}
-        {% set str1 = "{:,}".format(raw1).replace(',', '.') if raw1 is number and raw1 % 1 == 0 else raw1|string|replace('.', ',') %}
-        {% set str2 = "{:,}".format(raw2).replace(',', '.') if raw2 is number and raw2 % 1 == 0 else raw2|string|replace('.', ',') %}
+        {# Formatação Inteligente (padrão BR: . para milhar, , para decimal) #}
+        {% set str1 = "{:,.2f}".format(v1).replace(',', 'X').replace('.', ',').replace('X', '.') if raw1 is number and raw1 % 1 != 0 else "{:,}".format(raw1|int).replace(',', '.') if raw1 is number else raw1 %}
+        {% set str2 = "{:,.2f}".format(v2).replace(',', 'X').replace('.', ',').replace('X', '.') if raw2 is number and raw2 % 1 != 0 else "{:,}".format(raw2|int).replace(',', '.') if raw2 is number else raw2 %}
 
         {# O TRUQUE DEFINITIVO: Montamos o atributo INTEIRO no Jinja para o VS Code nem ver a palavra 'style' #}
         {% set attr_w1 = 'style="width: ' ~ w1 ~ '%;"' %}
@@ -91,7 +91,7 @@
             
             {{ sofa_row('Gastos com Segurança', c1.despesa_seguranca_pct, c2.despesa_seguranca_pct, is_pct=True) }}
             
-            {{ sofa_row('PIB per Capita', c1.pib_per_capita, c2.pib_per_capita, is_pct=True) }}
+            {{ sofa_row('PIB per Capita', c1.pib_per_capita, c2.pib_per_capita) }}
         </div>
 
     </div>

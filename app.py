@@ -52,7 +52,7 @@ def calcular_nota_municipio(row) -> float | None:
         pontos.append((float(row["ideb_anos_iniciais"]) / 10) * 5)
         pesos.append(0.20)
 
-    if row["cobertura_aps"] is not None:
+    if row["cobertura_aps"] is not None and float(row["cobertura_aps"]) > 0:
         pontos.append((float(row["cobertura_aps"]) / 100) * 5)
         pesos.append(0.15)
 
