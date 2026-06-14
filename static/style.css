@@ -634,6 +634,10 @@ h1 .highlight::after {
 .spark-label { font-size: .78rem; color: var(--mid); font-weight: 300; }
 .spark-svg { flex: 1; }
 .spark-svg svg { width: 100%; height: 60px; }
+.spark-svg.tall svg { height: 150px; }
+.spark-row.tall { gap: 2rem; }
+.spark-row.tall .spark-big { font-size: 2.4rem; }
+.spark-row.tall .spark-label { font-size: .85rem; }
 .line-chart-wrap svg { width: 100%; height: auto; }
 
 /* Container do gráfico de variação */

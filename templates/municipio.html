@@ -108,18 +108,18 @@
     <div class="card-title">Evolução IDEB — Anos Iniciais</div>
     <div class="card-sub">Comparativo da nota — Edições 2021 vs 2023</div>
     
-    <div class="spark-row">
+    <div class="spark-row tall">
       <div class="spark-info">
         {% if dados.ideb_anos_iniciais is not none and dados.ideb_delta is not none %}
           <div class="spark-big">{{ dados.ideb_anos_iniciais | replace(".", ",") }}</div>
-          
+
           <div class="spark-label">
-            Nota em 2023 
+            Nota em 2023
             {% if media_nacional_ideb %}
               <span style="color: var(--mid); margin-left: 4px;">(Média BR: {{ media_nacional_ideb | replace(".", ",") }})</span>
             {% endif %}
           </div>
-          
+
           <div class="kpi-delta {% if dados.ideb_delta > 0 %}up{% elif dados.ideb_delta < 0 %}down{% else %}neu{% endif %}" style="margin-top:.3rem; font-size:.75rem;">
               {% if dados.ideb_delta > 0 %}▲ +{% elif dados.ideb_delta < 0 %}▼ {% else %}— {% endif %}{{ dados.ideb_delta | replace(".", ",") }} pontos vs 2021
           </div>
@@ -128,43 +128,63 @@
           <div class="spark-label" style="margin-top: 5px;">Aguardando INEP</div>
         {% endif %}
       </div>
-      
-      <div class="spark-svg">
-        {% if dados.ideb_anos_iniciais is not none and dados.ideb_delta is not none %}
-          
-          {# Lógica Jinja para a inclinação da linha #}
-          {% set delta = dados.ideb_delta | float %}
-          
-          {# Cor azul institucional #}
-          {% set cor = "#1a3a5c" %}
-          
-          {# Limitador visual para o SVG não quebrar (max 20px de desvio). 
-            Como o delta do IDEB é em pontos (ex: 0.5), multiplicamos por 10 para dar efeito visual #}
-          {% set lim_delta = delta * 15 %}
-          {% set lim_delta = 20 if lim_delta > 20 else lim_delta %}
-          {% set lim_delta = -20 if lim_delta < -20 else lim_delta %}
-          
-          {# Eixo Y (invertido no SVG) #}
-          {% set y2021 = 25 + lim_delta %}
-          {% set y2023 = 25 - lim_delta %}
 
-          <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">
+      <div class="spark-svg tall">
+        {% if dados.ideb_anos_iniciais is not none and dados.ideb_delta is not none %}
+
+          {# Cores: azul institucional para a linha, laranja para a média BR #}
+          {% set cor = "#1a3a5c" %}
+          {% set cor_br = "#d4500a" %}
+
+          {# Escala absoluta de nota → coordenada Y (invertida no SVG).
+             Faixa visível: nota 2.0 (base, y=120) até nota 8.0 (topo, y≈15).
+             Como notas do IDEB ficam entre ~3 e ~7, a faixa 2–8 amplia as diferenças. #}
+          {% set base = 2.0 %}
+          {% set sf = 17.5 %}
+          {% set y_base = 120 %}
+
+          {% set nota_atual = dados.ideb_anos_iniciais | float %}
+          {% set nota_2021 = nota_atual - (dados.ideb_delta | float) %}
+
+          {% set y2023 = y_base - (nota_atual - base) * sf %}
+          {% set y2023 = 15 if y2023 < 15 else (120 if y2023 > 120 else y2023) %}
+          {% set y2021 = y_base - (nota_2021 - base) * sf %}
+          {% set y2021 = 15 if y2021 < 15 else (120 if y2021 > 120 else y2021) %}
+
+          {% if media_nacional_ideb %}
+            {% set media_nac = media_nacional_ideb | float %}
+            {% set y_nac = y_base - (media_nac - base) * sf %}
+            {% set y_nac = 15 if y_nac < 15 else (120 if y_nac > 120 else y_nac) %}
+          {% endif %}
+
+          <svg viewBox="0 0 260 135" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="idebGradDin" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="{{ cor }}" stop-opacity="0.15"/>
                 <stop offset="100%" stop-color="{{ cor }}" stop-opacity="0"/>
               </linearGradient>
             </defs>
-            
-            <polygon points="10,{{ y2021 }} 250,{{ y2023 }} 250,55 10,55" fill="url(#idebGradDin)"/>
-            
-            <polyline points="10,{{ y2021 }} 250,{{ y2023 }}" stroke="{{ cor }}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            
-            <circle cx="10" cy="{{ y2021 }}" r="3" fill="{{ cor }}"/>
-            <circle cx="250" cy="{{ y2023 }}" r="4" fill="{{ cor }}"/>
-            
-            <text x="10"  y="57" font-size="8" fill="#8a8070" font-family="DM Sans, Arial, sans-serif">2021</text>
-            <text x="250" y="57" font-size="8" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">2023</text>
+
+            {# Eixo base #}
+            <line x1="8" y1="{{ y_base }}" x2="252" y2="{{ y_base }}" stroke="#e0dacc" stroke-width="1"/>
+
+            {# ── Barra vertical: média nacional (centralizada, sob a linha) ── #}
+            {% if media_nacional_ideb %}
+              <rect x="106" y="{{ y_nac }}" width="48" height="{{ y_base - y_nac }}" rx="3" fill="{{ cor_br }}" opacity="0.85"/>
+              <text x="130" y="{{ y_nac - 6 }}" font-size="11" font-weight="700" fill="{{ cor_br }}" text-anchor="middle" font-family="Syne, Arial, sans-serif">{{ media_nacional_ideb | replace(".", ",") }}</text>
+              <text x="130" y="132" font-size="10" fill="{{ cor_br }}" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">Média BR</text>
+            {% endif %}
+
+            {# ── Linha horizontal: evolução do município (2021 → 2023), por cima da barra ── #}
+            <polygon points="20,{{ y2021 }} 240,{{ y2023 }} 240,{{ y_base }} 20,{{ y_base }}" fill="url(#idebGradDin)"/>
+            <polyline points="20,{{ y2021 }} 240,{{ y2023 }}" stroke="{{ cor }}" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <circle cx="20" cy="{{ y2021 }}" r="4" fill="{{ cor }}"/>
+            <circle cx="240" cy="{{ y2023 }}" r="5.5" fill="{{ cor }}"/>
+            <text x="240" y="{{ y2023 - 9 }}" font-size="11" font-weight="700" fill="{{ cor }}" text-anchor="end" font-family="Syne, Arial, sans-serif">{{ dados.ideb_anos_iniciais | replace(".", ",") }}</text>
+
+            <text x="20"  y="132" font-size="10" fill="#8a8070" text-anchor="middle" font-family="DM Sans, Arial, sans-serif">2021</text>
+            <text x="240" y="132" font-size="10" fill="#8a8070" text-anchor="end" font-family="DM Sans, Arial, sans-serif">2023</text>
           </svg>
         {% endif %}
       </div>

@@ -150,6 +150,13 @@ def municipio(codigo_ibge):
         LIMIT 5
     """, (codigo_ibge, populacao)).fetchall()
 
+    # Média nacional do IDEB Anos Iniciais (ignora None e valores zerados)
+    media_nacional = conn.execute("""
+        SELECT ROUND(AVG(ideb_anos_iniciais), 1) FROM municipios
+        WHERE ideb_anos_iniciais IS NOT NULL AND ideb_anos_iniciais > 0
+    """).fetchone()[0]
+    media_nacional_ideb = str(media_nacional) if media_nacional is not None else None
+
     conn.close()
 
     similares = [municipio_para_dict(r) for r in rows_sim]
@@ -170,6 +177,7 @@ def municipio(codigo_ibge):
         dados=dados,
         similares=similares,
         media_similares=media_similares,
+        media_nacional_ideb=media_nacional_ideb,
     )
 
 
