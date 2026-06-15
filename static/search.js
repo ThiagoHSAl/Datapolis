@@ -29,7 +29,7 @@ function initAutocomplete(inputId, dropdownId) {
           const baseUrl = window.URL_BASE_BUSCA || '/municipio/';
           dropdown.innerHTML = municipios.map(m => `
             <div class="autocomplete-item nav-dropdown-item" onclick="window.location.href='${baseUrl}${m.codigo_ibge}'">
-              <span class="autocomplete-name nav-name">${m.nome}</span>
+              <span class="autocomplete-name nav-name">${m.nome_municipio}</span>
               <span class="autocomplete-uf nav-uf">${m.uf}</span>
             </div>
           `).join('');

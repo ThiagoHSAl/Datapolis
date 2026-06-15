@@ -8,6 +8,8 @@ Rotas:
   GET  /comparar/<cod1>/<cod2>        → comparacao.html
   GET  /api/search?q=<texto>          → autocomplete JSON
   GET  /api/notas-mapa                → notas 0-5 por município e estado (D3.js)
+  GET  /api/dublin-core               → mapeamento Dublin Core ↔ campos (ISO 15836)
+  GET  /api/dublin-core/<codigo_ibge> → metadados Dublin Core de um município
 """
 
 import sqlite3
@@ -107,6 +109,27 @@ def municipio_para_dict(row) -> dict:
     return d
 
 
+def dublin_core_metadata(row) -> dict:
+    """
+    Metadados Dublin Core (ISO 15836) de um município.
+
+    Alinhamento semântico do slide 3.3 — Tratamento Descritivo: Dublin Core.
+    As chaves usam o prefixo `dc:` do namespace http://purl.org/dc/elements/1.1/.
+    """
+    descricao = (
+        f"IDEB Anos Iniciais: {row['ideb_anos_iniciais']}; "
+        f"Mortalidade infantil: {row['mortalidade_infantil']}; "
+        f"PIB per capita: {row['pib_per_capita']}"
+    )
+    return {
+        "dc:identifier":  str(row["codigo_ibge"]),       # código IBGE de 7 dígitos
+        "dc:title":       row["nome_municipio"],         # termo preferencial de exibição
+        "dc:description": descricao,                     # conteúdo informacional (REAL)
+        "dc:source":      row["fonte_oficial"],          # proveniência (ex: INEP)
+        "dc:date":        row["ano_referencia"],         # temporalidade da série
+    }
+
+
 def media_lista(lista: list, campo: str, como_int=False):
     """
     Média de um campo numa lista de dicts (ignora None).
@@ -178,6 +201,7 @@ def municipio(codigo_ibge):
         similares=similares,
         media_similares=media_similares,
         media_nacional_ideb=media_nacional_ideb,
+        dc=dublin_core_metadata(row),
     )
 
 
@@ -185,7 +209,7 @@ def municipio(codigo_ibge):
 def selecionar_comparacao(cod1):
     conn = get_db()
     cidade1 = conn.execute(
-        "SELECT codigo_ibge, nome, uf FROM municipios WHERE codigo_ibge = ?",
+        "SELECT codigo_ibge, nome_municipio, uf FROM municipios WHERE codigo_ibge = ?",
         (cod1,)
     ).fetchone()
     conn.close()
@@ -233,10 +257,10 @@ def api_search():
 
     conn = get_db()
     rows = conn.execute("""
-        SELECT codigo_ibge, nome, uf
+        SELECT codigo_ibge, nome_municipio, uf
         FROM municipios
-        WHERE nome LIKE ?
-        ORDER BY nome ASC
+        WHERE nome_municipio LIKE ?
+        ORDER BY nome_municipio ASC
         LIMIT 10
     """, (f"%{q}%",)).fetchall()
     conn.close()
@@ -272,6 +296,45 @@ def api_notas_mapa():
     }
 
     return jsonify({"municipios": notas_municipios, "estados": notas_estados})
+
+
+@app.route("/api/dublin-core")
+def api_dublin_core():
+    """
+    Mapeamento Dublin Core ↔ campos do Datapólis (ISO 15836).
+    Descreve o padrão de metadados adotado, independente de município.
+    """
+    return jsonify({
+        "schema":    "http://purl.org/dc/elements/1.1/",
+        "norma":     "ISO 15836 (Dublin Core)",
+        "mapeamento": [
+            {"elemento": "dc:identifier",  "campo": "codigo_ibge",
+             "justificativa": "Identificador único e imutável de recuperação."},
+            {"elemento": "dc:title",       "campo": "nome_municipio",
+             "justificativa": "Termo preferencial para exibição na interface."},
+            {"elemento": "dc:description", "campo": "ideb_anos_iniciais, mortalidade_infantil, pib_per_capita",
+             "justificativa": "Representação do conteúdo informacional (REAL)."},
+            {"elemento": "dc:source",      "campo": "fonte_oficial",
+             "justificativa": "Proveniência e fidedignidade da informação."},
+            {"elemento": "dc:date",        "campo": "ano_referencia",
+             "justificativa": "Temporalidade necessária para séries históricas."},
+        ],
+    })
+
+
+@app.route("/api/dublin-core/<int:codigo_ibge>")
+def api_dublin_core_municipio(codigo_ibge):
+    """Metadados Dublin Core (ISO 15836) de um município específico."""
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM municipios WHERE codigo_ibge = ?", (codigo_ibge,)
+    ).fetchone()
+    conn.close()
+
+    if row is None:
+        abort(404)
+
+    return jsonify(dublin_core_metadata(row))
 
 
 # ── Erro 404 ──────────────────────────────────────────────────────────────────

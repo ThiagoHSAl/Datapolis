@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ c1.nome }} vs {{ c2.nome }} — Datapólis</title>
+    <title>{{ c1.nome_municipio }} vs {{ c2.nome_municipio }} — Datapólis</title>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -63,12 +63,12 @@
         <div class="compare-header">
             <div class="vs-row">
                 <div class="vs-city">
-                    <h2 style="color: var(--accent2);">{{ c1.nome }}</h2>
+                    <h2 style="color: var(--accent2);">{{ c1.nome_municipio }}</h2>
                     <span>{{ c1.uf }} · {{ "{:,}".format(c1.populacao).replace(',', '.') if c1.populacao else 'N/D' }} hab.</span>
                 </div>
                 <div class="vs-badge">VS</div>
                 <div class="vs-city">
-                    <h2 style="color: var(--accent);">{{ c2.nome }}</h2>
+                    <h2 style="color: var(--accent);">{{ c2.nome_municipio }}</h2>
                     <span>{{ c2.uf }} · {{ "{:,}".format(c2.populacao).replace(',', '.') if c2.populacao else 'N/D' }} hab.</span>
                 </div>
             </div>

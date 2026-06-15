@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Datapólis — {{ dados.nome }}</title>
+
+<!-- Tratamento Descritivo: Dublin Core (ISO 15836) — metadados de recuperação -->
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.identifier"  content="{{ dc['dc:identifier'] }}">
+<meta name="DC.title"       content="{{ dc['dc:title'] }}">
+<meta name="DC.description" content="{{ dc['dc:description'] }}">
+<meta name="DC.source"      content="{{ dc['dc:source'] }}">
+<meta name="DC.date"        content="{{ dc['dc:date'] }}">
+
+<title>Datapólis — {{ dados.nome_municipio }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -14,12 +23,12 @@
 
 <div class="page-header">
   <div class="breadcrumb">
-    <a href="/">Municípios</a> › <span>{{ dados.uf }}</span> › <span>{{ dados.nome }}</span>
+    <a href="/">Municípios</a> › <span>{{ dados.uf }}</span> › <span>{{ dados.nome_municipio }}</span>
   </div>
 
   <div class="city-row">
     <div>
-      <div class="city-title">{{ dados.nome }}</div>
+      <div class="city-title">{{ dados.nome_municipio }}</div>
       <div class="city-meta">{{ dados.uf }} · Região {{ dados.regiao }} · {% if dados.populacao is not none %}{{ "{:,}".format(dados.populacao).replace(',', '.') }}{% else %}N/D{% endif %} habitantes · {% if dados.capital %}Capital{% else %}Interior{% endif %} · Código IBGE: {{ dados.codigo_ibge }}</div>
     </div>
     <a href="/comparar/{{ dados.codigo_ibge }}" style="text-decoration: none;">
@@ -352,7 +361,7 @@
       </thead>
       <tbody>
         <tr class="highlighted">
-          <td>{{ dados.nome }} ({{ dados.uf }})</td>
+          <td>{{ dados.nome_municipio }} ({{ dados.uf }})</td>
           <td>{% if dados.ideb_anos_iniciais is not none %}{{ dados.ideb_anos_iniciais | replace(".", ",") }}{% else %}N/D{% endif %}</td>
           <td>{% if dados.cobertura_aps is not none %}{{ dados.cobertura_aps | replace(".", ",") }}%{% else %}N/D{% endif %}</td>
           <td>{% if dados.mortalidade_infantil is not none %}{{ dados.mortalidade_infantil | replace(".", ",") }}{% else %}N/D{% endif %}</td>
@@ -366,7 +375,7 @@
         <tr>
           <td>
              <a href="/municipio/{{ sim.codigo_ibge }}" style="color: inherit; text-decoration: none;">
-               {{ sim.nome }} ({{ sim.uf }})
+               {{ sim.nome_municipio }} ({{ sim.uf }})
              </a>
           </td>
           <td>{% if sim.ideb_anos_iniciais is not none %}{{ sim.ideb_anos_iniciais | replace(".", ",") }}{% else %}N/D{% endif %}</td>

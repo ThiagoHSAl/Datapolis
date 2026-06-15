@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparar {{ cidade1.nome }} — Datapólis</title>
+    <title>Comparar {{ cidade1.nome_municipio }} — Datapólis</title>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -19,7 +19,7 @@
 
     <div class="hero" style="padding-top: 3.5rem; padding-bottom: 2rem;">
         <div class="hero-tag">Modo Confronto</div>
-        <h1>Com qual cidade você quer comparar <span class="highlight" style="color: var(--accent2);">{{ cidade1.nome }}</span>?</h1>
+        <h1>Com qual cidade você quer comparar <span class="highlight" style="color: var(--accent2);">{{ cidade1.nome_municipio }}</span>?</h1>
         <p class="hero-sub">Selecione o segundo município navegando pelo mapa ou use a busca direta abaixo.</p>
 
         <div class="search-wrap">
