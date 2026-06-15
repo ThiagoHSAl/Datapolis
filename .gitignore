@@ -1,1 +1,3 @@
-datapolis.db.bak
+*.bak
+MER_Datapolis.html
+migracao_normalizacao.sql

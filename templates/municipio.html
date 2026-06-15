@@ -5,12 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Tratamento Descritivo: Dublin Core (ISO 15836) — metadados de recuperação -->
+<!-- Cobertura total: uma meta tag por atributo do município -->
 <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
-<meta name="DC.identifier"  content="{{ dc['dc:identifier'] }}">
-<meta name="DC.title"       content="{{ dc['dc:title'] }}">
-<meta name="DC.description" content="{{ dc['dc:description'] }}">
-<meta name="DC.source"      content="{{ dc['dc:source'] }}">
-<meta name="DC.date"        content="{{ dc['dc:date'] }}">
+{% for nome, conteudo in dc.items() %}
+<meta name="{{ nome }}" content="{{ conteudo }}">
+{%- endfor %}
 
 <title>Datapólis — {{ dados.nome_municipio }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">

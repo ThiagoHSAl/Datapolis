@@ -109,25 +109,73 @@ def municipio_para_dict(row) -> dict:
     return d
 
 
+# Conteúdo informacional (dc:description) — TODOS os indicadores do município.
+# Cada coluna vira uma meta tag qualificada DC.description.<campo>.
+DC_DESCRICAO_CAMPOS = [
+    "pib_per_capita", "nota_geral",
+    "ideb_anos_iniciais", "ideb_delta",
+    "cobertura_aps", "mortalidade_infantil", "mortalidade_delta",
+    "ocorrencias_criminais", "ocorrencias_delta",
+    "bolsa_familia_beneficiarios", "bolsa_familia_delta",
+    "despesa_educacao_pct", "despesa_saude_pct", "despesa_administracao_pct",
+    "despesa_seguranca_pct", "despesa_infraestrutura_pct", "despesa_outros_pct",
+]
+
+
 def dublin_core_metadata(row) -> dict:
     """
-    Metadados Dublin Core (ISO 15836) de um município.
+    Metadados Dublin Core (ISO 15836) de um município — cobertura TOTAL.
 
-    Alinhamento semântico do slide 3.3 — Tratamento Descritivo: Dublin Core.
-    As chaves usam o prefixo `dc:` do namespace http://purl.org/dc/elements/1.1/.
+    Mapeia *todos* os atributos do município aos elementos do Dublin Core
+    (namespace http://purl.org/dc/elements/1.1/), retornando um dicionário
+    ordenado nome-da-meta → conteúdo. As chaves usam a forma de meta tag
+    HTML (DC.Elemento) e qualificadores (DC.elemento.campo) para refinar.
+
+        Identificação → DC.identifier, DC.title, DC.date, DC.source
+        Cobertura     → DC.coverage.{uf,regiao,capital,populacao}
+        Descrição     → DC.description + DC.description.<indicador> (todos)
+        Recurso       → DC.publisher, DC.language, DC.type, DC.format, DC.subject
     """
-    descricao = (
-        f"IDEB Anos Iniciais: {row['ideb_anos_iniciais']}; "
-        f"Mortalidade infantil: {row['mortalidade_infantil']}; "
-        f"PIB per capita: {row['pib_per_capita']}"
+    def val(campo):
+        v = row[campo]
+        return "N/D" if v is None else v
+
+    resumo = (
+        f"Indicadores de {val('nome_municipio')}/{val('uf')} "
+        f"(ano-base {val('ano_referencia')}): IDEB {val('ideb_anos_iniciais')}, "
+        f"mortalidade infantil {val('mortalidade_infantil')}, "
+        f"PIB per capita {val('pib_per_capita')}, nota geral {val('nota_geral')}."
     )
-    return {
-        "dc:identifier":  str(row["codigo_ibge"]),       # código IBGE de 7 dígitos
-        "dc:title":       row["nome_municipio"],         # termo preferencial de exibição
-        "dc:description": descricao,                     # conteúdo informacional (REAL)
-        "dc:source":      row["fonte_oficial"],          # proveniência (ex: INEP)
-        "dc:date":        row["ano_referencia"],         # temporalidade da série
+
+    meta = {
+        # Recurso (constantes — descrevem o dataset/página)
+        "DC.publisher": "Datapólis — UFMG (2026)",
+        "DC.language":  "pt-BR",
+        "DC.type":      "Dataset",
+        "DC.format":    "text/html; charset=utf-8",
+        "DC.subject":   "Indicadores municipais: educação, saúde, segurança, "
+                        "orçamento, assistência social",
+
+        # Identificação e proveniência
+        "DC.identifier":  str(row["codigo_ibge"]),   # código IBGE de 7 dígitos
+        "DC.title":       val("nome_municipio"),     # termo preferencial de exibição
+        "DC.date":        val("ano_referencia"),     # temporalidade da série
+        "DC.source":      val("fonte_oficial"),      # proveniência (ex: INEP)
+
+        # Cobertura geográfica e demográfica
+        "DC.coverage.uf":        val("uf"),
+        "DC.coverage.regiao":    val("regiao"),
+        "DC.coverage.capital":   "Sim" if row["capital"] else "Não",
+        "DC.coverage.populacao": val("populacao"),
+
+        # Descrição (resumo + detalhamento de todos os indicadores)
+        "DC.description": resumo,
     }
+
+    for campo in DC_DESCRICAO_CAMPOS:
+        meta[f"DC.description.{campo}"] = val(campo)
+
+    return meta
 
 
 def media_lista(lista: list, campo: str, como_int=False):
@@ -312,12 +360,24 @@ def api_dublin_core():
              "justificativa": "Identificador único e imutável de recuperação."},
             {"elemento": "dc:title",       "campo": "nome_municipio",
              "justificativa": "Termo preferencial para exibição na interface."},
-            {"elemento": "dc:description", "campo": "ideb_anos_iniciais, mortalidade_infantil, pib_per_capita",
-             "justificativa": "Representação do conteúdo informacional (REAL)."},
+            {"elemento": "dc:coverage",    "campo": "uf, regiao, capital, populacao",
+             "justificativa": "Abrangência geográfica e demográfica do recurso."},
+            {"elemento": "dc:description", "campo": ", ".join(DC_DESCRICAO_CAMPOS),
+             "justificativa": "Conteúdo informacional completo (todos os indicadores)."},
             {"elemento": "dc:source",      "campo": "fonte_oficial",
              "justificativa": "Proveniência e fidedignidade da informação."},
             {"elemento": "dc:date",        "campo": "ano_referencia",
              "justificativa": "Temporalidade necessária para séries históricas."},
+            {"elemento": "dc:publisher",   "campo": "(constante) Datapólis — UFMG",
+             "justificativa": "Responsável pela disponibilização do recurso."},
+            {"elemento": "dc:language",    "campo": "(constante) pt-BR",
+             "justificativa": "Idioma do conteúdo."},
+            {"elemento": "dc:type",        "campo": "(constante) Dataset",
+             "justificativa": "Natureza do recurso (conjunto de dados)."},
+            {"elemento": "dc:format",      "campo": "(constante) text/html",
+             "justificativa": "Formato de apresentação do recurso."},
+            {"elemento": "dc:subject",     "campo": "(constante) indicadores municipais",
+             "justificativa": "Tópico/assunto do recurso."},
         ],
     })
 
